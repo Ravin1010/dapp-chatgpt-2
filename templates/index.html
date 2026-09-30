@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <title>BlockCheck</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero card">
+      <div>
+        <p class="eyebrow">SC6113 DApp</p>
+        <h1>BlockCheck</h1>
+        <p class="subtitle">Blockchain event registration and attendance verification.</p>
+      </div>
+
+      <div class="status-row">
+        <span id="networkBadge" class="badge">Network: —</span>
+        <span id="walletBadge" class="badge">Wallet: not connected</span>
+      </div>
+
+      <button id="connectBtn" class="button primary full" type="button">
+        Connect MetaMask
+      </button>
+      <button id="mobileWalletBtn" class="button secondary full hidden" type="button">
+        Open in MetaMask Mobile
+      </button>
+    </header>
+
+    <section id="setupWarning" class="card warning hidden">
+      <strong>Contract address not configured.</strong>
+      <span>Deploy BlockCheck.sol in Remix, then set CONTRACT_ADDRESS in Render.</span>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Organizer</p>
+          <h2>Create Event</h2>
+        </div>
+      </div>
+
+      <form id="createEventForm" class="stack">
+        <label>
+          Event name
+          <input id="eventName" type="text" maxlength="100" placeholder="e.g. SC6113 Demo Day" required>
+        </label>
+
+        <label>
+          Event date & time
+          <input id="eventTime" type="datetime-local" required>
+        </label>
+
+        <button id="createBtn" class="button primary full" type="submit">
+          Create Event On-Chain
+        </button>
+      </form>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Events</p>
+          <h2>Available Events</h2>
+        </div>
+        <button id="refreshBtn" class="button secondary small" type="button">
+          Refresh
+        </button>
+      </div>
+
+      <div id="eventList" class="event-list">
+        <div class="empty-state">Connect your wallet to load events.</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <p class="eyebrow">Verification</p>
+      <h2>Check Wallet Attendance</h2>
+
+      <form id="verifyForm" class="stack">
+        <label>
+          Event ID
+          <input id="verifyEventId" type="number" min="1" placeholder="1" required>
+        </label>
+
+        <label>
+          Wallet address
+          <input id="verifyWallet" type="text" placeholder="0x..." required>
+        </label>
+
+        <button class="button secondary full" type="submit">Verify</button>
+      </form>
+
+      <div id="verifyResult" class="verify-result hidden"></div>
+    </section>
+
+    <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.min.js"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

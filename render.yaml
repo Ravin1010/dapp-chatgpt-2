@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: blockcheck-dapp
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: CHAIN_ID
+        value: "11155111"
+      - key: CHAIN_NAME
+        value: Sepolia
+      - key: CONTRACT_ADDRESS
+        sync: false
