@@ -218,7 +218,7 @@ async function loadEvents() {
 
     // Newest event first.
     for (let id = count; id >= 1; id--) {
-      const info = await contract.getEvent(id);
+      const info = await contract["getEvent(uint256)"](id);
       const [registered, checkedIn] = await contract.getMyStatus(id);
 
       const isOrganizer =
