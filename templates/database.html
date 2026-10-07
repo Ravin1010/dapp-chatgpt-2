@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Database Controls</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>SQLite Database</h1>
+      <p>Create once, store transactions, or delete the database.</p>
+    </header>
+
+    <nav>
+      <a href="/">Make Transaction</a>
+      <a href="/transactions">My Transactions</a>
+      <a href="/database">Database</a>
+    </nav>
+
+    <section class="card">
+      <p><strong>Status:</strong> {{ 'Exists' if db_exists else 'Deleted / not created' }}</p>
+      <p><strong>Rows:</strong> {{ row_count }}</p>
+      <p class="small"><strong>Path:</strong> {{ database_path }}</p>
+
+      <form method="post" action="/database/create">
+        <button type="submit">Create Database</button>
+      </form>
+      <form method="post" action="/database/delete" onsubmit="return confirm('Delete the entire SQLite database?');">
+        <button type="submit" class="danger">Delete Database</button>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

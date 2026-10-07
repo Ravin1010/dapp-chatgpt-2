@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Transactions</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>My Transactions</h1>
+      <p>Only transactions saved for the connected wallet are shown.</p>
+    </header>
+
+    <nav>
+      <a href="/">Make Transaction</a>
+      <a href="/transactions">My Transactions</a>
+      <a href="/database">Database</a>
+    </nav>
+
+    <section class="card">
+      <div class="row-between">
+        <p id="walletStatus">Not connected</p>
+        <button id="connectButton">Connect MetaMask</button>
+      </div>
+      <button id="refreshButton" class="secondary">Refresh Transactions</button>
+    </section>
+
+    <section class="card">
+      <div id="transactionsList" class="transaction-list">
+        <p>Connect your wallet to load transactions.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.DAPP_CONFIG = {
+      contractAddress: {{ contract_address|tojson }},
+      chainId: {{ chain_id|tojson }},
+      chainName: {{ chain_name|tojson }}
+    };
+  </script>
+  <script src="{{ url_for('static', filename='transactions.js') }}"></script>
+</body>
+</html>

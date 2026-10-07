@@ -1,8 +1,9 @@
 services:
   - type: web
-    name: blockcheck-dapp
+    name: dapp-sqlite-transactions
     runtime: python
     plan: free
+    region: singapore
     buildCommand: pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
@@ -11,4 +12,4 @@ services:
       - key: CHAIN_NAME
         value: Sepolia
       - key: CONTRACT_ADDRESS
-        sync: false
+        value: ""
