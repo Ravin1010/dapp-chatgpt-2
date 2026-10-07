@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <title>My Transactions · BlockCheck</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="card">
+      <p class="eyebrow">SQLite History</p>
+      <h2>My Transactions</h2>
+      <p class="subtitle">View all confirmed BlockCheck transactions saved for your connected wallet.</p>
+      <div class="feature-links">
+        <a class="button secondary" href="/">Back to BlockCheck</a>
+        <a class="button secondary" href="/database">SQLite Database</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="status-row">
+        <span id="networkBadge" class="badge">Network: —</span>
+        <span id="walletBadge" class="badge">Wallet: not connected</span>
+      </div>
+      <button id="connectBtn" class="button primary full" type="button">Connect MetaMask</button>
+      <button id="refreshBtn" class="button secondary full" type="button" disabled>Refresh Transactions</button>
+    </section>
+
+    <section class="card">
+      <div id="transactionList" class="transaction-list">
+        <div class="empty-state">Connect your wallet to view your transactions.</div>
+      </div>
+    </section>
+
+    <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.15.0/dist/ethers.umd.min.js"></script>
+  <script src="{{ url_for('static', filename='js/transactions.js') }}"></script>
+</body>
+</html>

@@ -43,6 +43,32 @@ function formatDate(unixSeconds) {
   return new Date(Number(unixSeconds) * 1000).toLocaleString();
 }
 
+async function saveTransaction(tx, receipt, action, eventId = null, details = "") {
+  try {
+    const response = await fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        walletAddress,
+        txHash: tx.hash,
+        action,
+        eventId,
+        details,
+        blockNumber: receipt?.blockNumber ?? null,
+      }),
+    });
+
+    const result = await response.json();
+    if (!response.ok && response.status !== 409) {
+      throw new Error(result.error || "Could not save transaction.");
+    }
+    return true;
+  } catch (error) {
+    console.error("SQLite save failed:", error);
+    return false;
+  }
+}
+
 async function loadConfig() {
   const response = await fetch("/api/config");
   if (!response.ok) throw new Error("Could not load DApp configuration.");
@@ -143,11 +169,26 @@ async function createEvent(event) {
     createBtn.textContent = "Waiting for block…";
     setStatus(`Transaction sent: ${tx.hash.slice(0, 12)}…`);
 
-    await tx.wait();
+    const receipt = await tx.wait();
+    let newEventId = null;
+
+    for (const log of receipt.logs || []) {
+      try {
+        const parsed = contract.interface.parseLog(log);
+        if (parsed?.name === "EventCreated") {
+          newEventId = Number(parsed.args.eventId);
+          break;
+        }
+      } catch {
+        // Ignore logs emitted by other contracts.
+      }
+    }
+
+    const saved = await saveTransaction(tx, receipt, "CREATE_EVENT", newEventId, name);
 
     createEventForm.reset();
     await loadEvents();
-    setStatus("Event created successfully.");
+    setStatus(saved ? "Event created and saved to transaction history." : "Event created on-chain, but the SQLite history could not be saved.", !saved);
   } catch (error) {
     setStatus(error.shortMessage || error.reason || error.message || "Could not create event.", true);
   } finally {
@@ -162,9 +203,10 @@ async function registerForEvent(eventId) {
   try {
     setStatus(`Registering for event #${eventId}…`);
     const tx = await contract.register(eventId);
-    await tx.wait();
+    const receipt = await tx.wait();
+    const saved = await saveTransaction(tx, receipt, "REGISTER", eventId, `Registered for event #${eventId}`);
     await loadEvents();
-    setStatus(`Registered for event #${eventId}.`);
+    setStatus(saved ? `Registered for event #${eventId} and saved to history.` : `Registered for event #${eventId}, but history save failed.`, !saved);
   } catch (error) {
     setStatus(error.shortMessage || error.reason || error.message || "Registration failed.", true);
   }
@@ -176,9 +218,10 @@ async function checkInToEvent(eventId) {
   try {
     setStatus(`Checking in to event #${eventId}…`);
     const tx = await contract.checkIn(eventId);
-    await tx.wait();
+    const receipt = await tx.wait();
+    const saved = await saveTransaction(tx, receipt, "CHECK_IN", eventId, `Checked in to event #${eventId}`);
     await loadEvents();
-    setStatus(`Checked in to event #${eventId}.`);
+    setStatus(saved ? `Checked in to event #${eventId} and saved to history.` : `Checked in to event #${eventId}, but history save failed.`, !saved);
   } catch (error) {
     setStatus(error.shortMessage || error.reason || error.message || "Check-in failed.", true);
   }
@@ -190,9 +233,12 @@ async function setEventActive(eventId, active) {
   try {
     setStatus(`${active ? "Activating" : "Closing"} event #${eventId}…`);
     const tx = await contract.setEventActive(eventId, active);
-    await tx.wait();
+    const receipt = await tx.wait();
+    const action = active ? "REOPEN_EVENT" : "CLOSE_EVENT";
+    const details = `${active ? "Reopened" : "Closed"} event #${eventId}`;
+    const saved = await saveTransaction(tx, receipt, action, eventId, details);
     await loadEvents();
-    setStatus(`Event #${eventId} updated.`);
+    setStatus(saved ? `Event #${eventId} updated and saved to history.` : `Event #${eventId} updated, but history save failed.`, !saved);
   } catch (error) {
     setStatus(error.shortMessage || error.reason || error.message || "Could not update event.", true);
   }
@@ -216,7 +262,6 @@ async function loadEvents() {
 
     const cards = [];
 
-    // Newest event first.
     for (let id = count; id >= 1; id--) {
       const info = await contract["getEvent(uint256)"](id);
       const [registered, checkedIn] = await contract.getMyStatus(id);
@@ -252,32 +297,15 @@ async function loadEvents() {
           </div>
 
           <div class="event-actions">
-            <button
-              class="button primary"
-              onclick="registerForEvent(${id})"
-              ${registered || !info.active ? "disabled" : ""}
-            >
+            <button class="button primary" onclick="registerForEvent(${id})" ${registered || !info.active ? "disabled" : ""}>
               ${registered ? "Registered" : "Register"}
             </button>
 
-            <button
-              class="button secondary"
-              onclick="checkInToEvent(${id})"
-              ${!registered || checkedIn || !info.active ? "disabled" : ""}
-            >
+            <button class="button secondary" onclick="checkInToEvent(${id})" ${!registered || checkedIn || !info.active ? "disabled" : ""}>
               ${checkedIn ? "Checked In" : "Check In"}
             </button>
 
-            ${
-              isOrganizer
-                ? `<button
-                     class="button secondary"
-                     onclick="setEventActive(${id}, ${!info.active})"
-                   >
-                     ${info.active ? "Close Event" : "Reopen Event"}
-                   </button>`
-                : ""
-            }
+            ${isOrganizer ? `<button class="button secondary" onclick="setEventActive(${id}, ${!info.active})">${info.active ? "Close Event" : "Reopen Event"}</button>` : ""}
           </div>
         </article>
       `);

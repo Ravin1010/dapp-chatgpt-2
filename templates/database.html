@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#071018">
+  <title>SQLite Database · BlockCheck</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="card">
+      <p class="eyebrow">Database Controls</p>
+      <h2>SQLite Database</h2>
+      <p class="subtitle">The database is created idempotently: if it already exists, Create Database does not create a duplicate.</p>
+      <div class="feature-links">
+        <a class="button secondary" href="/">Back to BlockCheck</a>
+        <a class="button secondary" href="/transactions">My Transactions</a>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="meta db-meta">
+        <div><strong>Status:</strong> {{ 'Exists' if db_exists else 'Deleted / not created' }}</div>
+        <div><strong>Saved records:</strong> {{ row_count }}</div>
+        <div><strong>Path:</strong> <code>{{ database_path }}</code></div>
+      </div>
+
+      <form method="post" action="/database/create">
+        <button class="button primary full" type="submit">Create Database</button>
+      </form>
+
+      <form method="post" action="/database/delete" onsubmit="return confirm('Delete the entire SQLite database and all saved transaction records?');">
+        <button class="button danger full" type="submit">Delete Database</button>
+      </form>
+
+      <p class="database-note">Demo note: deleting the database removes all locally saved transaction-history records. It does not delete blockchain transactions.</p>
+    </section>
+  </main>
+</body>
+</html>
